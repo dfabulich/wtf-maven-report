@@ -18,7 +18,7 @@ import org.apache.maven.reporting.MavenReportException;
 public class MyReport extends AbstractMavenReport {
 
 	@Parameter(defaultValue="${project.reporting.outputDirectory}", required=true, readonly=true)
-	private File outputDirectory;
+	private File siteDirectory;
 	
 	@Parameter(defaultValue="${project}", required=true, readonly=true)
 	private MavenProject project;
@@ -28,7 +28,7 @@ public class MyReport extends AbstractMavenReport {
 	
 	@Override
 	public String getOutputName() {
-		return "my-report";
+		return "jsdoc";
 	}
 
 	@Override
@@ -48,7 +48,7 @@ public class MyReport extends AbstractMavenReport {
 
 	@Override
 	protected String getOutputDirectory() {
-		return outputDirectory.getAbsolutePath();
+		return siteDirectory.getAbsolutePath();
 	}
 
 	@Override
@@ -60,10 +60,19 @@ public class MyReport extends AbstractMavenReport {
 	protected void executeReport(Locale locale) throws MavenReportException {
 		getLog().info("Hello");
 		try {
-			FileWriter fos = new FileWriter(outputDirectory.getAbsolutePath() + "/foo");
-			fos.write("hello\n");
-			fos.flush();
-			fos.close();
+			// This is the file to which Maven will link. No choice in the matter.
+			File redirectFile = new File(siteDirectory, getOutputName() + ".html");
+			FileWriter out = new FileWriter(redirectFile);
+			out.write("<html><meta HTTP-EQUIV=\"REFRESH\" content=\"0; url=jsdoc/index.html\"></html>\n");
+			out.flush();
+			out.close();
+			File outputDirectory = new File(siteDirectory, getOutputName());
+			outputDirectory.mkdirs();
+			File outputFile = new File(outputDirectory, "index.html");
+			out = new FileWriter(outputFile);
+			out.write("<html>yay</html>");
+			out.flush();
+			out.close();
 		} catch (IOException e) {
 			throw new MavenReportException("IOException", e);
 		}
